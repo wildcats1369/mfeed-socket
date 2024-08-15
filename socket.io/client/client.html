@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="score.css" />
+    <!-- Include JavaScript -->
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.7.1.min.js"></script>
+    <!-- <script src="mfeed.js?b"></script> -->
+</head>
+
+<body>
+    <h1>Mfeed Socket Test</h1>
+    <script>
+        // Usage:
+        $(document).ready(function () {
+            const widget = new SportsWidget('soccer', 'acmilan', 'en-us');
+            widget.connect();
+
+            const widget2 = new SportsWidget('basketball', 'acmilan', 'vi-vn');
+            widget2.connect();
+        });
+    </script>
+
+
+</body>
+
+</html>
