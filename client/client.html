@@ -2,22 +2,50 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="score.css" />
-    <!-- Include JavaScript -->
-    <script src="sportsocket.js"></script>
+
+    <link rel="stylesheet" href="https://mfeed.suchekreuz.com/css/score.css" />
+    <link rel="stylesheet" href="https://mfeed.suchekreuz.com/css/jquery-ui.structure.css" />
+    <link rel="stylesheet" href="https://mfeed.suchekreuz.com/css/jquery-ui.theme.min.css" />
+    Include JavaScript
+    <script src="https://mfeed.suchekreuz.com/js/jquery.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://mfeed.suchekreuz.com/js/socket.io.min.js"></script>
+    <script src="https://mfeed.suchekreuz.com/js/SportsWidget.js"></script>
+    <script src="https://mfeed.suchekreuz.com/js/jquery-ui.min.js"></script>
+    <!-- <script src="mfeed.js?b"></script> -->
+    <!-- =================================== -->
+    <!-- <link rel="stylesheet" href="https://mfeed.suchekreuz.com/score.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://mfeed.suchekreuz.com/socket.io/socket.io.js"></script>
+    <script src="https://mfeed.suchekreuz.com/SportsWidget.js"></script> -->
+    <script>
+        $(function () {
+            $("#container").tabs();
+        }); 
+    </script>
+
 </head>
 
 <body>
     <h1>Mfeed Socket Test</h1>
-
     <script>
         // Usage:
-        const widget = new SportsWidget('soccer', 'acmilan', 'en-us');
-        widget.connect();
+        $(document).ready(function () {
+            // const widget = new SportsWidget('soccer', 'acmilan', 'en-us', 'tabs', 'container');
+            //widget.connect();
 
-        //const widget2 = new SportsWidget('basketball', 'acmilan', 'en-us');
-        //widget2.connect();
+
+            const widget2 = new SportsWidget('soccer', 'acmilan', 'vi-vn');
+            widget2.connect();
+            const widget3 = new SportsWidget('basketball', 'acmilan', 'vi-vn');
+            widget3.connect();
+        });
     </script>
 </body>
+
+<div id="container">
+
+</div>
+
 
 </html>
