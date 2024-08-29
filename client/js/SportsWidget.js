@@ -6,13 +6,9 @@ class SportsWidget {
     this.display = display;
     this.container = container;
     this.channel = this.sport + ':' + this.group + ':' + this.lang;
-    this.socket = io('http://localhost:3000');
+    this.socket = io('localhost:3000');
     this.data = {};
     this.feed = {};
-
-    console.log('channel')
-    console.log(this.channel);
-
 
   }
 
@@ -41,9 +37,7 @@ class SportsWidget {
     };
 
     this.socket.on('updateFeed', ({ feed }) => {
-      // console.log(feed);
-      // const message = mymessage;
-      // console.log(this.channel)
+
       this.feed = feed
       switch (this.display) {
         case 'scoreboard':
@@ -52,19 +46,81 @@ class SportsWidget {
         case 'tabs':
           this.displayTabs(this.channel);
           break;
+        case 'tournament':
+          this.displayTournament(this.container);
+          break;
       }
 
       let group = this.groupData(this.feed);
-      console.log(group)
-      console.log(group['yesterday']);
-      console.log(group['today']);
-      console.log(group['tomorrow']);
+
     });
   }
 
-  displayTabs(container) {
-    console.log('container: ' + container);
+  displayTournament(container) {
+
     let mycontainer = document.getElementById(this.container);
+    mycontainer.innerHTML = '';
+
+    if (this.feed) {
+      let tournament_header = document.createElement('div');
+      let tournament_container = document.createElement('div');
+      tournament_container.className = 'tournament-container';
+      tournament_header.className = 'tournament-header';
+      tournament_header.innerHTML = `
+    <img src="img/tournament-title1.png" alt="Primera Nacional">
+    <h2>Primera Nacional Argentina</h2>
+    `;
+      tournament_container.appendChild(tournament_header);
+
+      let matches = this.feed;
+      let matches_container = document.createElement('div');
+      matches_container.className = 'matches-container';
+      mycontainer.appendChild(matches_container);
+
+
+      if (matches.length > 0) {
+        Object.keys(matches).forEach((key) => {
+          let data = matches[key];
+          let match = document.createElement('div');
+          match.className = 'tournament-match-card';
+          match.innerHTML = `
+                <div class="tournament-match-details">
+                    <img src="https://api.mfeedbo.com/api/m88feed/getteamicon/` + data['homeTeamIcon'] + `" alt="` + data['homeTeam'] + `">
+                    <div class="tournament-team">` + data['homeTeam'] + `</div>
+                </div>
+                <div class="tournament-match-info">
+                    <div class="tournament-match-date">`+ this.getLocalDate(data['date']) + `</div>
+                    <div class="tournament-match-time">`+ this.getLocalTime(data['date']) + `</div>
+                </div>
+                <div class="tournament-match-details">
+                    <img src="https://api.mfeedbo.com/api/m88feed/getteamicon/` + data['awayTeamIcon'] + `" alt="` + data['awayTeam'] + `">
+                    <div class="tournament-team">` + data['awayTeam'] + `</div>
+                </div>
+        `;
+
+          matches_container.appendChild(match);
+
+        });
+      } else {
+        matches_container.innerHTML = 'Data is Empty';
+      }
+
+      tournament_container.appendChild(matches_container);
+      mycontainer.innerHTML = tournament_container.innerHTML
+
+    } else {
+      mycontainer.innerHTML = 'Data is Empty';
+    }
+  }
+
+
+  displayTabs(container) {
+    if ($('#' + this.container).tabs('instance')) {
+      $('#' + this.container).tabs('destroy');
+    }
+
+    let mycontainer = document.getElementById(this.container);
+    mycontainer.innerHTML = '';
     let data = this.groupData(this.feed);
 
     let id = 'tabs-' + this.channel;
@@ -74,20 +130,30 @@ class SportsWidget {
       div = document.createElement('div');
       div.id = id;
     } else {
+
       div = element;
     }
     // mycontainer.appendChild(div);
     this.generateTabs(data, mycontainer)
-    $('#' + this.container).tabs();
+    $('#' + this.container).tabs({
+      classes: {
+        "ui-tabs": "",
+        "ui-tabs-nav": "",
+        "ui-tabs-tab": "",
+        "ui-tabs-panel": "",
+        "ui-tabs-active": ""
+      }
+    });
   }
 
   generateTabs(data, div) {
-
+    div.innerHTML = '';
     let tab = document.createElement('ul');
     Object.keys(data).forEach((key) => {
       let li = document.createElement('li');
       let id = "tab-" + key
-      let content = `<a href="#${id}">${key}</a></li>`;
+      li.className = 'tab'
+      let content = `<a href="#${id}">${this.ucwords(key)}</a></li>`;
       li.innerHTML = content;
       tab.appendChild(li);
     });
@@ -97,12 +163,99 @@ class SportsWidget {
       let cdiv = document.createElement('div');
 
       cdiv.id = "tab-" + key
-      let content = JSON.stringify(data[key]);
-      cdiv.innerHTML = `<p>${content}</p>`;
+      let content = this.generateTabContent(data[key]);
+      cdiv.innerHTML = content.innerHTML;
       div.appendChild(cdiv);
     });
   }
 
+  generateTabContent(data) {
+
+    let tabcontent = document.createElement('div');
+    tabcontent.className = 'scoreboard';
+
+    Object.keys(data).forEach((key) => {
+
+      let event = document.createElement('div');
+      event.innerHTML = ''
+      event.className = 'event';
+      let event_header = document.createElement('div');
+      event_header.className = 'event-header';
+      const league_icon = data[key][0]['tIconLight'];
+      event_header.innerHTML = `
+        <img src = "https://api.mfeedbo.com/api/m88feed/getleagueicon/`+ league_icon + ` " alt = "Country Flag" class="flag">
+          <span class="event-name">`+ data[key][0]['tournament'] + `</span>
+        `
+      event.appendChild(event_header);
+      let matches = data[key];
+      let event_matches = document.createElement('div');
+      event_matches.className = 'matches';
+
+      Object.keys(matches).forEach((key) => {
+        let match = document.createElement('div');
+        match.className = 'match';
+        match.innerHTML = `<div class="time">` + this.getLocalTime(matches[key]['date']) + `</div>
+        <div class="team">`+ matches[key]['homeTeam'] + `</div>
+        <div class="score">`+ matches[key]['homeScore'] + ` - ` + matches[key]['awayScore'] + `</div>
+        <div class="team">`+ matches[key]['awayTeam'] + `</div>`
+        event_matches.appendChild(match);
+
+      });
+      event.appendChild(event_matches);
+
+      // Add matches
+      // Add to tab content
+      tabcontent.appendChild(event);
+
+    });
+
+    return tabcontent;
+  }
+
+  getLocalDate(dateString) {
+
+    // Parse the date string into a Date object
+    let date = new Date(dateString);
+
+    // Get the visitor's local timezone offset in minutes
+    let timezoneOffset = date.getTimezoneOffset();
+
+    // Convert the date to the visitor's local timezone
+    let localDate = new Date(date.getTime() - (timezoneOffset * 60000));
+
+    // Format the date and time
+    let options = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
+    let formattedDate = localDate.toLocaleString('en-US', options);
+
+    return formattedDate;
+  }
+
+  getLocalTime(dateString) {
+
+    // Parse the date string into a Date object
+    let date = new Date(dateString);
+
+    // Get the visitor's local timezone offset in minutes
+    let timezoneOffset = date.getTimezoneOffset();
+
+    // Convert the date to the visitor's local timezone
+    let localDate = new Date(date.getTime() - (timezoneOffset * 60000));
+
+    // Format the date and time
+    let options = {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    };
+    let formattedDate = localDate.toLocaleString('en-US', options);
+
+    return formattedDate;
+  }
 
 
   displayScoreBoards(container) {
@@ -137,7 +290,6 @@ class SportsWidget {
 
 
   populateGames(data, container) {
-    console.log(container);
     let template = `
       <div class="s_bode">
     <div class="home_section">
@@ -175,54 +327,62 @@ class SportsWidget {
 
   groupData(data) {
     const today = new Date();
-    const yesterday = new Date(today);
-    const tomorrow = new Date(today);
-
-    yesterday.setDate(today.getDate() - 1);
-    tomorrow.setDate(today.getDate() + 1);
-
     const formatDate = (date) => date.toISOString().split('T')[0];
 
     const todayStr = formatDate(today);
-    const yesterdayStr = formatDate(yesterday);
-    const tomorrowStr = formatDate(tomorrow);
 
     const categorizedData = {
-      history: {},
-      yesterday: {},
+      previous: {},
       today: {},
-      tomorrow: {},
-      upcoming: {}
+      upcoming: {},
+      live: {}
     };
 
     data.forEach(match => {
-      const matchDate = match.date.split('T')[0];
+      let match_tournament = match.tournament;
+
+      const matchDate = new Date(match.date);
+      const matchDateStr = formatDate(matchDate);
       let category;
 
-      if (matchDate === yesterdayStr) {
-        category = 'yesterday';
-      } else if (matchDate === todayStr) {
+      if (matchDateStr === todayStr) {
         category = 'today';
-      } else if (matchDate === tomorrowStr) {
-        category = 'tomorrow';
-      } else if (new Date(matchDate) < yesterday) {
-        category = 'history';
+      } else if (matchDate < today) {
+        category = 'previous';
       } else {
         category = 'upcoming';
       }
 
-      if (!categorizedData[category]) {
-        categorizedData[category] = {};
+      if (match.isLive == 1) {
+        category = 'live';
       }
 
-      if (!categorizedData[category][match.tournament]) {
-        categorizedData[category][match.tournament] = [];
-      }
+      if (categorizedData[category] && categorizedData[category][match_tournament]) {
 
-      categorizedData[category][match.tournament].push(match);
+      } else {
+        categorizedData[category][match_tournament] = [];
+      }
+      categorizedData[category][match_tournament].push(match);
+
+
     });
 
     return categorizedData;
+  }
+
+
+  slugify(str) {
+    return str
+    // .toLowerCase() // Convert to lowercase
+    // .trim() // Remove leading and trailing whitespace
+    // .replace(/[^a-z0-9 .-]/g, '') // Remove non-alphanumeric characters except dots and hyphens
+    // .replace(/\s+/g, '-') // Replace spaces with hyphens
+    // .replace(/-+/g, '-'); // Remove consecutive hyphens
+  }
+  ucwords(str) {
+    return str.toLowerCase().replace(/\b\w/g, function (char) {
+      return char.toUpperCase();
+    });
   }
 }
 

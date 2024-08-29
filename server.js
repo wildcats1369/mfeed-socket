@@ -81,14 +81,23 @@ const roomsList = {};
 const channelData = {};
 // Handle socket connections
 io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);    // Join a specific room
+    // console.log('A user connected:', socket.id);    // Join a specific room
     socket.on('joinRoom', (room) => {
         socket.join(room.channel);
         console.log(`Socket ${socket.id} joined room ${room.channel}`);
+        client.del(room.channel);
+        Object.keys(apiServiceInstances).forEach((key) => {
+            if (apiServiceInstances[key].channel == room.channel) {
+                apiServiceInstances[key].previousData1 = null
+                apiServiceInstances[key].previousData2 = null
+            }
+        });
+
         if (!roomsList[room.channel]) {
             roomsList[room.channel] = [];
             channelData[room.channel] = room;
             addApiServiceInstance(room.channel);
+
         }
         roomsList[room.channel].push(socket.id);
 
@@ -99,7 +108,7 @@ io.on('connection', (socket) => {
     // Handle messages sent to a specific room
     socket.on('sendMessage', ({ room, message }) => {
         io.to(room).emit('receiveMessage', { message, sender: socket.id });
-        console.log(`Message from ${socket.id} to room ${room}: ${message}`);
+        // console.log(`Message from ${socket.id} to room ${room}: ${message}`);
     });
 
     // Handle disconnection
@@ -124,9 +133,9 @@ io.on('connection', (socket) => {
 
 
 async function hearbeat() {
-    console.log('tick');
+    // console.log('tick');
     for (const channel in channelData) {
-        console.log(channel);
+        // console.log(channel);
         const service = apiServiceInstances[channel];
         if (service) {
             await service.getFeed();
@@ -137,7 +146,7 @@ async function hearbeat() {
 function addApiServiceInstance(channel) {
     if (!apiServiceInstances[channel]) {
         apiServiceInstances[channel] = new ApiService(channelData[channel]);
-        console.log(`ApiService instance created for channel: ${channel}`);
+        // console.log(`ApiService instance created for channel: ${channel}`);
     }
 }
 
@@ -145,7 +154,7 @@ function removeApiServiceInstance(channel) {
     if (apiServiceInstances[channel]) {
         // apiServiceInstances[channel].remove(); // Assuming your ApiService class has a remove method
         delete apiServiceInstances[channel];
-        console.log(`ApiService instance removed for channel: ${channel}`);
+        // console.log(`ApiService instance removed for channel: ${channel}`);
     }
 }
 
@@ -176,14 +185,15 @@ class ApiService {
     }
     async getMatched() {
         try {
-
+            // console.log('calling '+this.get_matched_url);
             const response = await axios.get(this.get_matched_url, {
                 headers: this.baseHeaders,
             });
+            // console.log(this.get_matched_url+' responded');
 
             return response.data;
         } catch (error) {
-            console.error('Error calling API 1:', error.message);
+            console.error('Error calling API:', error.message);
             throw error;
         }
     }
@@ -195,26 +205,24 @@ class ApiService {
                 let data1 = await client.get(this.channel);// getAsync(this.channel);
 
                 if (data1 === null) {
-                    console.log('Fetching data1 from API()');
+                    // console.log('Fetching data1 from API()');
                     data1 = await this.getMatched();
                     // console.log(data1);
                     // Set the cache with a lifespan of 2 second
                     await client.set(this.channel, JSON.stringify(data1), { EX: 2 });
+                    // io.to(this.channel).emit('updateFeed', { feed: data1 });
                 } else {
-                    console.log('Fetching data1 from cache');
+                    // console.log('Fetching data1 from cache');
                     data1 = JSON.parse(data1);
                 }
 
                 if (JSON.stringify(data1) !== JSON.stringify(this.previousData1)) {
-                    console.log('broadcaasting');
                     this.previousData1 = data1;
                     io.to(this.channel).emit('updateFeed', { feed: data1 });
-                } else {
-                    console.log('same data')
                 }
             }
         } catch (error) {
-            console.error('Error polling APIs:', error.message);
+            // console.error('Error polling APIs:', error.message);
         }
     }
 

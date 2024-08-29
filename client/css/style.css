@@ -1,0 +1,174 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #0d2438;
+  color: #fff;
+}
+
+.ui-tabs-panel {
+  background-color: #1e3b55 !important;
+  border: none !important;
+}
+
+.ui-tabs .ui-tabs-nav {
+  margin: 0;
+  padding: 0 !important;
+}
+
+/* Increase specificity */
+.ui-tabs .ui-tabs-nav li a {
+  border-radius: 0 !important;
+  background-color: #2c4e6a !important;
+  border: none !important;
+  border-bottom: 0 !important;
+  /* Remove rounded corners */
+}
+
+.ui-tabs .ui-tabs-nav li {
+  margin: 0 !important;
+  background-color: #2c4e6a !important;
+  border: none !important;
+
+}
+
+.ui-tabs-active .ui-state-active {
+  background-color: #1e3b55 !important;
+  background: none;
+}
+
+/* Optionally, target the active tab as well */
+.ui-tabs .ui-tabs-nav li.ui-tabs-active a {
+  border-radius: 0 !important;
+  background-color: #1e3b55 !important;
+  /* Remove rounded corners for the active tab */
+}
+
+.ui-widget-header {
+  background: none !important;
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.ui-widget-content {
+  border: 0 !important;
+}
+
+.ui-widget-header {
+  border: 0 !important;
+
+}
+
+.container {
+  width: 90%;
+  margin: 20px auto;
+  max-width: 1200px;
+  background-color: #1e3b55;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  background-color: #2c4e6a;
+}
+
+.tab {
+  flex: 1;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  background-color: #2c4e6a;
+  border: none;
+  font-size: 16px;
+  color: #fff;
+}
+
+.tab.active {
+  background-color: #1e3b55;
+}
+
+.scoreboard {
+  padding: 20px;
+}
+
+.event {
+  margin-bottom: 20px;
+}
+
+.event-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.flag {
+  width: 50px;
+  height: 30px;
+  margin-right: 10px;
+}
+
+.event-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.matches {
+  border-left: 2px solid #4c6b87;
+  padding-left: 20px;
+}
+
+.match {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.time {
+  background-color: #4c6b87;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 10px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.ongoing {
+  background-color: #f28d35;
+}
+
+.team,
+.score {
+  flex: 1;
+  text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    width: 100%;
+  }
+
+  .match {
+    flex-direction: column;
+  }
+
+  .time,
+  .team,
+  .score {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .time {
+    font-size: 16px;
+  }
+}
